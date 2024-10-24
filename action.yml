@@ -46,11 +46,13 @@ runs:
     run: |
       vendor/bin/phpstan analyze -l 6 ${{ inputs.phpstanPaths }}
   - name: phpunit
+    shell: bash
     if: inputs.phpunit
     run: |
       XDEBUG_MODE=coverage vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
   - name: prepare arche-prod and arche-cur configs
     if: inputs.prepareRepoConfig
+    shell: bash
     run: |
       mkdir tmp && cd tmp
       composer require -n zozlak/yaml-merge
