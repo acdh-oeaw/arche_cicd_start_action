@@ -1,11 +1,13 @@
-# ARCHE CI/CD Finish Action
+# ARCHE CI/CD Start Action
 
-Packs in one action all the steps done at the end of an ARCHE microservices build, test and redeploy GitHub workflow:
+Packs in one action all the steps done at the beginning of an ARCHE microservices build, test and redeploy GitHub workflow:
 
-* login into the docker hub
-* push the image into the docker hub
-* redeploy the image on the ACDH cluster
-* push the code coverage logs to the coveralls
+* checkout the repo
+* set up PHP version with extensiont
+* run the static code analysis with the phpstan
+* run tests with the phpunit
+* create direct database connection config files for ARCHE production and curation instances
+* clean up after tests
 
 Use with something like:
 
