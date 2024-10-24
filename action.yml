@@ -1,0 +1,61 @@
+name: ARCHE CI/CD Start Action
+description: Covers initial repeatable steps of the ARCHE microservices CI/CD GitHub workflows. Checks out the repo, sets up the PHP version, runs tests and prepares direct db configuration files.
+inputs:
+  phpVersion:
+    required: false
+    default: 8.3
+  phpExtensions:
+    require: false
+    default: mbstring,json,yaml,pdo,pdo_sqlite,pdo_pgsql
+  phpCoverage:
+    required: false
+    default: xdebug
+  phpstanLevel:
+    description: phpstan analyze level; use 0 to skip phpstan checks
+    required: false
+    default: 6
+  phpstanPaths:
+    required: false
+    default: src index.php
+  phpunit:
+    type: boolean
+    description: Should phpunit be run?
+    required: false
+    default: true
+  prepareRepoConfig:
+    description: Should archeProd.yaml and archeCur.yaml files defining the direct database connection parameters for the production and curation ARCHE instances be created in the repository root?
+    type: boolean
+    required: false
+    default: false
+runs:
+  using: composite
+  steps:
+  - uses: actions/checkout@v4
+  - uses: shivammathur/setup-php@v2
+    with:
+    php-version: ${{ inputs.phpVersion }}
+    extensions: ${{ inputs.phpExtensions }}
+    coverage: ${{ inputs.phpCoverage }}
+  - name: composer
+    shell: bash
+    run: |
+      composer update
+  - name: phpstan
+    if: ${{ inputs.phpstanLevel > 0 }}
+    shell: bash
+    run: |
+      vendor/bin/phpstan analyze -l 6 ${{ inputs.phpstanPaths }}
+  - name: phpunit
+    if: inputs.phpunit
+    run: |
+      XDEBUG_MODE=coverage vendor/bin/phpunit --display-deprecations --display-phpunit-deprecations --display-notices --display-warnings
+  - name: prepare arche-prod and arche-cur configs
+    if: inputs.prepareRepoConfig
+    run: |
+      mkdir tmp && cd tmp
+      composer require -n zozlak/yaml-merge
+      curl https://arche.acdh.oeaw.ac.at/api/describe > prod.yaml
+      curl https://arche-curation.acdh-dev.oeaw.ac.at/api/describe > cur.yaml
+      vendor/bin/yaml-edit.php --src prod.yaml --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_prod"}}' ../archeProd.yaml
+      vendor/bin/yaml-edit.php --src cur.yaml  --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_cur"}}'  ../archeCur.yaml
+      cd .. && rm -fR tmp
