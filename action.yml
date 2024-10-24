@@ -59,3 +59,8 @@ runs:
       vendor/bin/yaml-edit.php --src prod.yaml --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_prod"}}' ../archeProd.yaml
       vendor/bin/yaml-edit.php --src cur.yaml  --src '{"dbConn": {"guest": "pgsql: host=10.6.16.94 port=5433 user=arche_thumbnails dbname=arche_cur"}}'  ../archeCur.yaml
       cd .. && rm -fR tmp
+  - name: cleanup
+    shell: bash
+    run: |
+      git reset --hard HEAD
+      rm -fR vendor composer.lock
