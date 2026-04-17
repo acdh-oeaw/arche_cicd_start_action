@@ -16,7 +16,7 @@ inputs:
     default: 6
   phpstanPaths:
     required: false
-    default: src index.php
+    default: src tests index.php
   phpunit:
     description: Should phpunit be run?
     required: false
